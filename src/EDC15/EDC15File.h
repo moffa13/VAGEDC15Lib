@@ -33,6 +33,8 @@ public:
 	inline size_t getRealFlashSize() const { return _flash.size(); };
 	inline size_t getRealFlashSizeAsWord() const { return _sizeAsWord; };
 	static std::vector<PatternByte> containerToPatternByte(std::span<uint8_t> span);
+	std::vector<uint8_t>& data() { return _flash; }
+	const std::vector<uint8_t>& data() const { return _flash; }
 	std::vector<uint8_t> _flash;
 protected:
 	bool isEmptyBlock(size_t addr, size_t len, uint8_t emptyByte);
