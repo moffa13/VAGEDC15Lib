@@ -3,10 +3,12 @@
 #include <string>
 #include <vector>
 #include <format>
+#include <filesystem>
 
 namespace Utilities
 {
 
+	std::filesystem::path& addToPath(std::filesystem::path& path, std::string_view content, char separator);
 	std::string normalize(std::string_view s);
 	std::string toLower(std::string_view s);
 	std::vector<std::string> split(std::string_view line, char sep);

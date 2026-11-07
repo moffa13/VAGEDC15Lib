@@ -8,8 +8,15 @@
 
 namespace Utilities
 {
-
-
+    std::filesystem::path& addToPath(std::filesystem::path& path, std::string_view content, char separator)
+    {
+        auto name = path.stem();
+        name += separator;
+        name += content;
+        name += path.extension();
+        path.replace_filename(name);
+        return path;
+    }
     std::string normalize(std::string_view s)
     {
         std::string out;

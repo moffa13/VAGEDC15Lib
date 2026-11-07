@@ -1,4 +1,5 @@
 #include "EDC15File.h"
+#include "vagedc15/Logging/Logger.h"
 #include <fstream>
 #include <cstdint>
 #include <vector>
@@ -6,12 +7,14 @@
 #include <string_view>
 #include <span>
 #include <format>
+#include <regex>
 
 EDC15File::EDC15File(std::filesystem::path const& path) : _flash(readFile(path)), _sizeAsWord(_flash.size() / 2)
 {
     if (_flash.size() != EDC15File::flashSize)
         throw std::runtime_error{"Flash size for an EDC15 is wrong, error was thrown as a security measure."};
     
+    Logger::debug("Opening file with software {}", getFirmwareInfos());
 }
 
 std::vector<PatternByte> EDC15File::parsePattern(std::string_view pattern)
@@ -155,6 +158,47 @@ std::optional<size_t> EDC15File::findPattern(
     }
 
     return std::nullopt;
+}
+
+std::string_view EDC15File::getFirmwareInfos() const
+{
+    auto edcPatternPos = findPattern("45 44 43 20 20", 0x40000); // "EDC__"
+    if (!edcPatternPos) {
+        return {};
+    }
+
+    auto posBase = _flash.data() + *edcPatternPos;
+    auto flashBegin = _flash.data();
+    auto flashEnd = _flash.data() + _flash.size();
+
+    auto first = reinterpret_cast<const char*>(std::find(std::reverse_iterator{posBase}, std::reverse_iterator{ flashBegin }, 0).base());
+    auto last = reinterpret_cast<const char*>(std::find(posBase, flashEnd, 0));
+
+    // the first match will give the offset of the first sequence not made of not allowed chars
+    static const std::regex reg{"[0-9]{6,}"};
+
+    std::cmatch m;
+
+    if (!std::regex_search(first, last, m, reg))
+        return {};
+
+    return { first + m.position(), last};
+}
+
+std::string_view EDC15File::getVAGPartnumber() const
+{
+    return getVAGPartnumber(getFirmwareInfos());
+}
+
+std::string_view EDC15File::getVAGPartnumber(std::string_view text)
+{
+    static const std::regex reg{ "[0-9]{9}[A-Z]{1,2}" };
+    std::cmatch m;
+
+    if (!std::regex_search(text.data(), text.data() + text.size(), m, reg))
+        return {};
+
+    return text.substr(m.position(), m.length());
 }
 
 bool EDC15File::isEmptyBlock(size_t addr, size_t len, uint8_t emptyChar) {
