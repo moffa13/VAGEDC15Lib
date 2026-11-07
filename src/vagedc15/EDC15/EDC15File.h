@@ -32,6 +32,9 @@ public:
 	static std::vector<PatternByte> parsePattern(std::string_view pattern);
 	inline size_t getRealFlashSize() const { return _flash.size(); };
 	inline size_t getRealFlashSizeAsWord() const { return _sizeAsWord; };
+	std::string_view getFirmwareInfos() const;
+	std::string_view getVAGPartnumber() const;
+	static std::string_view getVAGPartnumber(std::string_view text);
 	static std::vector<PatternByte> containerToPatternByte(std::span<uint8_t> span);
 	std::vector<uint8_t>& data() { return _flash; }
 	const std::vector<uint8_t>& data() const { return _flash; }
