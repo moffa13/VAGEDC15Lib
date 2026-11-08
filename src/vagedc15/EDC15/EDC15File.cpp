@@ -75,10 +75,15 @@ std::vector<size_t> EDC15File::findPatterns(
 
     while (startOffset < _flash.size()) {
         auto pos = findPattern(pat, startOffset, to, dir);
+        if (!pos) break;
         if (pos) {
             positions.push_back(*pos);
             if (dir == SearchDirection::Forward) {
                 startOffset = (*pos) + 1;
+                // The next start would be past the bound, nothing left to search
+                if (to && startOffset > *to) {
+                    break;
+                }
             }
             else {
                 startOffset = (*pos);
@@ -129,14 +134,14 @@ std::optional<size_t> EDC15File::findPattern(
         throw std::invalid_argument{ "<To> has invalid value" };
     }
 
-    
+
 
     const auto match = [&](size_t pos) {
         for (size_t k = 0; k < pat.size(); ++k)
             if (!pat[k].wildcard && _flash[pos + k] != pat[k].value)
                 return false;
         return true;
-    };
+        };
 
     if (dir == SearchDirection::Forward) {
         const size_t last = n - pat.size();
@@ -148,11 +153,12 @@ std::optional<size_t> EDC15File::findPattern(
             if (match(pos)) return pos;
     }
     else {
-        if (from < pat.size()) return std::nullopt;
-        const size_t start = from - pat.size();
         const size_t stop = to.value_or(0);
-        if (stop > start)
+        if (stop > from)
             throw std::invalid_argument{ "findPattern: bound > from (backward)" };
+        // Window too small to hold the pattern, same as forward: no match
+        if (from < pat.size() || from - pat.size() < stop) return std::nullopt;
+        const size_t start = from - pat.size();
         for (size_t pos = start + 1; pos-- > stop; )
             if (match(pos)) return pos;
     }

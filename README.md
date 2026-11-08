@@ -42,8 +42,11 @@ target_link_libraries(your_target PRIVATE vagedc15core)
 Then include the headers you need:
 
 ```cpp
-#include "EDC15/EDC15File.h"
-#include "Logging/Logger.h"
+#include <vagedc15/Core/CommandInterpreter.h>
+#include <vagedc15/Core/Config.h>
+#include <vagedc15/Core/Utilities.h>
+#include <vagedc15/EDC15/EDC15File.h>
+#include <vagedc15/Logging/Logger.h>
 ```
 
 ### Local development

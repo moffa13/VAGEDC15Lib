@@ -9,6 +9,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(
     tests
+    test_config.cpp
     test_edc15file.cpp
     test_command_interpreter.cpp
 )
