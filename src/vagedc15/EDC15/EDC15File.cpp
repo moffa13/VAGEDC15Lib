@@ -1,6 +1,7 @@
 #include "EDC15File.h"
 #include "vagedc15/Logging/Logger.h"
 #include <fstream>
+#include <charconv>
 #include <cstdint>
 #include <vector>
 #include <optional>
@@ -53,7 +54,7 @@ std::vector<PatternByte> EDC15File::containerToPatternByte(std::span<uint8_t> sp
     std::vector<PatternByte> bytes;
     for (auto e : span)
     {
-        bytes.emplace_back(e, false);
+        bytes.emplace_back(PatternByte{ e, false });
     }
     return bytes;
 }
